@@ -1,254 +1,446 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <base target="_top">
+function doGet(e) {
+  const page = e.parameter.page || "home";
+  switch(page) {
+    case "home": return HtmlService.createHtmlOutput(getHomePage());
+    case "lollies": return HtmlService.createHtmlOutput(getLolliesPage());
+    case "chocolate": return HtmlService.createHtmlOutput(getChocolatePage());
+    case "chips": return HtmlService.createHtmlOutput(getChipsPage());
+    case "drinks": return HtmlService.createHtmlOutput(getDrinksPage());
+    case "cart": return HtmlService.createHtmlOutput(getCartPage());
+    case "checkout": return HtmlService.createHtmlOutput(getCheckoutPage());
+    case "support": return HtmlService.createHtmlOutput(getSupportPage());
+    default: return HtmlService.createHtmlOutput(getHomePage());
+  }
+}
+
+// Navbar for all pages
+function getNavBar() {
+  return `
+    <nav style="background:#9b59b6;padding:10px;">
+      <a href="?page=home" style="color:#fff;margin-right:15px;text-decoration:none;font-weight:bold;">LolliGalaxy Emporium</a>
+      <a href="?page=lollies" style="color:#eee;margin-right:10px;">Lollies</a>
+      <a href="?page=chocolate" style="color:#eee;margin-right:10px;">Chocolate</a>
+      <a href="?page=chips" style="color:#eee;margin-right:10px;">Chips</a>
+      <a href="?page=drinks" style="color:#eee;margin-right:10px;">Drinks</a>
+      <a href="?page=cart" style="color:#eee;margin-right:10px;">Cart</a>
+      <a href="?page=checkout" style="color:#eee;margin-right:10px;">Checkout</a>
+      <a href="?page=support" style="color:#eee;">Support</a>
+    </nav>
+    <hr style="border:1px solid #9b59b6;">
+  `;
+}
+
+// 1. Home Page
+function getHomePage() {
+  return `
+  <html><head><title>LolliGalaxy Emporium - Home</title>
   <style>
-    body {font-family: Arial, sans-serif; margin:0; background:#f9f9f9;}
-    header, nav {background:#333; padding:10px;}
-    nav a {
-      color:#eee;
-      margin-right: 15px;
-      text-decoration:none;
-      font-weight:bold;
-    }
-    nav a.active, nav a:hover {
-      text-decoration: underline;
-      color: #ffd700;
-    }
-    main {padding: 20px;}
-    .product {
-      background: #fff;
-      border-radius: 6px;
-      box-shadow: 0 0 5px #ccc;
-      padding: 15px;
-      margin: 10px;
-      display: inline-block;
-      vertical-align: top;
-      width: 220px;
-    }
-    .product h4 {margin: 0 0 5px;}
-    .product p {margin: 4px 0;}
-    button {
-      background:#28a745;
-      border:none;
-      color:#fff;
-      padding:8px 15px;
-      border-radius:5px;
-      cursor:pointer;
-    }
-    button:hover {
-      background:#1e7e34;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background:#fff;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: left;
-    }
-    input[type=text], input[type=number], input[type=email] {
-      width: 100%;
-      padding: 8px;
-      margin: 6px 0 12px 0;
-      box-sizing: border-box;
-    }
-    .error {color: red;}
+    body {font-family: Arial, sans-serif; background: #f9f0ff; color: #6a1b9a; padding: 30px;}
+    h1 {font-size: 3em; margin-bottom: 0;}
+    h2 {margin-top: 5px; font-weight: normal; font-style: italic;}
+    a {color: #8e24aa; text-decoration: none; font-weight: bold;}
+    a:hover {text-decoration: underline;}
   </style>
-</head>
-<body>
+  </head><body>
+    ${getNavBar()}
+    <h1>Welcome to LolliGalaxy Emporium</h1>
+    <h2>Your cosmic candy adventure begins here!</h2>
+    <p>Explore our stellar selection of sweets and treats from across the galaxy.</p>
+    <p>Choose your favorite category from the menu above to start shopping:</p>
+    <ul>
+      <li><a href="?page=lollies">Lollies</a> - Classic, sour & exotic flavors</li>
+      <li><a href="?page=chocolate">Chocolate</a> - Bite size, jumbo & regular sized delights</li>
+      <li><a href="?page=chips">Chips</a> - From normal to exotic, even 24k gold!</li>
+      <li><a href="?page=drinks">Drinks</a> - Exotic juices and sodas above $5</li>
+    </ul>
+    <p>Happy munching! 🍭🚀</p>
+  </body></html>
+  `;
+}
 
-<?!= include('navbar'); ?>
-
-<main id="content">
-  Loading...
-</main>
-
-<script>
-  const page = '<?= page ?>';
-  const data = <?= JSON.stringify(data) ?>;
-  let cart = JSON.parse(localStorage.getItem('cart') || "[]");
-
-  // Update cart count in navbar
-  function updateCartCount() {
-    const count = cart.reduce((acc, item) => acc + item.qty, 0);
-    document.getElementById('cartCount').textContent = count;
+// 2. Lollies page
+function getLolliesPage() {
+  const normalFlavours = ["Strawberry", "Cherry", "Grape", "Watermelon", "Blueberry", "Orange", "Pineapple", "Lemon", "Apple", "Peach"];
+  const exoticFlavours = ["Dragonfruit", "Lychee", "Passionfruit", "Tamarind", "Kumquat", "Rambutan", "Jackfruit", "Soursop", "Mangosteen", "Starfruit"];
+  const sourFlavours = ["Sour Guava", "Sour Tamarind", "Sour Passionfruit", "Sour Kumquat", "Sour Lychee", "Sour Dragonfruit", "Sour Rambutan", "Sour Soursop", "Sour Mangosteen", "Sour Starfruit"];
+  const gummiesNormal = ["Gummy Bear", "Gummy Worm", "Gummy Cola", "Gummy Peach", "Gummy Apple", "Gummy Strawberry"];
+  const gummiesExotic = ["Gummy Lychee", "Gummy Dragonfruit", "Gummy Passionfruit", "Gummy Tamarind", "Gummy Kumquat", "Gummy Rambutan", "Gummy Mangosteen", "Gummy Soursop", "Gummy Jackfruit", "Gummy Starfruit", "Gummy Guava", "Gummy Pomegranate", "Gummy Yuzu", "Gummy Prickly Pear"];
+  
+  function listItem(name, category, price=2) {
+    return `<li class="prod" data-name="${name}" data-cat="${category}" data-price="${price}">${name} - $${price.toFixed(2)}</li>`;
   }
 
-  // Save cart to localStorage
-  function saveCart() {
-    localStorage.setItem('cart', JSON.stringify(cart));
-    updateCartCount();
+  return `
+  <html><head><title>Lollies - LolliGalaxy Emporium</title>
+    <style>
+      body {font-family: Arial,sans-serif; background:#f3e5f5; color:#6a1b9a; padding:20px;}
+      ul {columns: 2; list-style:none; padding-left:0;}
+      li.prod {cursor:pointer; margin-bottom:6px; text-decoration:underline;}
+      li.prod:hover {color:#4a0072;}
+    </style>
+  </head><body>
+    ${getNavBar()}
+    <h1>Lollies</h1>
+
+    <h3>Normal Flavours (10)</h3>
+    <ul>${normalFlavours.map(f => listItem(f, "Lollies")).join('')}</ul>
+
+    <h3>Exotic Flavours (10)</h3>
+    <ul>${exoticFlavours.map(f => listItem(f, "Lollies")).join('')}</ul>
+
+    <h3>Sour Lollies - All Exotic (10)</h3>
+    <ul>${sourFlavours.map(f => listItem(f + " Sour", "Lollies", 2.5)).join('')}</ul>
+
+    <h3>Gummies</h3>
+    <h4>Normal (6)</h4>
+    <ul>${gummiesNormal.map(f => listItem(f, "Lollies")).join('')}</ul>
+
+    <h4>Exotic (14)</h4>
+    <ul>${gummiesExotic.map(f => listItem(f, "Lollies", 2.5)).join('')}</ul>
+
+    <p><em>Click a product name to add to cart.</em></p>
+
+    <script>
+      document.querySelectorAll('li.prod').forEach(li => {
+        li.addEventListener('click', () => {
+          const name = li.getAttribute('data-name');
+          const cat = li.getAttribute('data-cat');
+          const price = parseFloat(li.getAttribute('data-price'));
+          addToCart(name, 1, cat, price);
+          alert(name + ' added to cart!');
+        });
+      });
+      function addToCart(name, qty, category, price=2) {
+        let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        let found = cart.find(i => i.name === name);
+        if(found) found.qty += qty;
+        else cart.push({name, qty, category, price});
+        localStorage.setItem('cart', JSON.stringify(cart));
+      }
+    </script>
+  </body></html>
+  `;
+}
+
+// 3. Chocolate page
+function getChocolatePage() {
+  const biteSize = ["Mint Bliss", "Hazelnut Crunch", "Caramel Swirl", "Dark Galaxy", "Sea Salt Delight", "Almond Joy", "Cherry Bomb", "Coffee Bean", "Orange Zest", "Raspberry Ripple"];
+  const jumboSize = ["Jumbo Dark", "Jumbo Milk", "Jumbo White", "Jumbo Caramel", "Jumbo Hazelnut", "Jumbo Mint", "Jumbo Almond", "Jumbo Mocha", "Jumbo Orange", "Jumbo Cherry"];
+  const regularSize = ["Classic Milk", "Classic Dark", "Classic White", "Classic Caramel", "Classic Hazelnut", "Classic Mint", "Classic Almond", "Classic Mocha", "Classic Orange", "Classic Cherry"];
+
+  function listItem(name, category, price=3) {
+    return `<li class="prod" data-name="${name}" data-cat="${category}" data-price="${price}">${name} - $${price.toFixed(2)}</li>`;
   }
 
-  // Add item to cart
-  function addToCart(name, price) {
-    const existing = cart.find(i => i.name === name);
-    if (existing) {
-      existing.qty++;
-    } else {
-      cart.push({name, price, qty: 1});
-    }
-    saveCart();
-    alert(name + " added to cart.");
+  return `
+  <html><head><title>Chocolate - LolliGalaxy Emporium</title>
+    <style>
+      body {font-family: Arial,sans-serif; background:#ede7f6; color:#512da8; padding:20px;}
+      ul {columns: 2; list-style:none; padding-left:0;}
+      li.prod {cursor:pointer; margin-bottom:6px; text-decoration:underline;}
+      li.prod:hover {color:#311b92;}
+    </style>
+  </head><body>
+    ${getNavBar()}
+    <h1>Chocolate</h1>
+
+    <h3>Bite Size (10)</h3>
+    <ul>${biteSize.map(f => listItem(f, "Chocolate")).join('')}</ul>
+
+    <h3>Jumbo Size (10)</h3>
+    <ul>${jumboSize.map(f => listItem(f, "Chocolate", 5)).join('')}</ul>
+
+    <h3>Regular Size (10)</h3>
+    <ul>${regularSize.map(f => listItem(f, "Chocolate")).join('')}</ul>
+
+    <p><em>Click a product name to add to cart.</em></p>
+
+    <script>
+      document.querySelectorAll('li.prod').forEach(li => {
+        li.addEventListener('click', () => {
+          const name = li.getAttribute('data-name');
+          const cat = li.getAttribute('data-cat');
+          const price = parseFloat(li.getAttribute('data-price'));
+          addToCart(name, 1, cat, price);
+          alert(name + ' added to cart!');
+        });
+      });
+      function addToCart(name, qty, category, price=3) {
+        let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        let found = cart.find(i => i.name === name);
+        if(found) found.qty += qty;
+        else cart.push({name, qty, category, price});
+        localStorage.setItem('cart', JSON.stringify(cart));
+      }
+    </script>
+  </body></html>
+  `;
+}
+
+// 4. Chips page
+function getChipsPage() {
+  const normalFlavours = ["Classic Salted", "BBQ", "Sour Cream", "Cheddar", "Sea Salt & Vinegar", "Jalapeno", "Garlic", "Onion", "Ranch", "Ketchup"];
+  const exoticFlavours = [
+    "Truffle Parmesan", "Spicy Mango", "Saffron & Lime", "Chili Chocolate", "Wasabi Ginger",
+    "Tamarind Tamarillo", "Curry Coconut", "Blue Cheese & Pear", "Maple Bacon", "Smoked Paprika",
+    "Lemon Thyme", "Cinnamon Sugar", "Lavender Honey", "Rosemary Garlic", "Szechuan Pepper",
+    "Matcha Salt", "Pomegranate Mint", "Blood Orange", "Sour Plum"
+  ];
+  const goldFlavour = ["24k Gold Crisps"];
+
+  function listItem(name, category, price=3) {
+    if(name === "24k Gold Crisps") price = 1000;
+    return `<li class="prod" data-name="${name}" data-cat="${category}" data-price="${price}">${name} - $${price.toFixed(2)}</li>`;
   }
 
-  // Remove from cart by index
-  function removeFromCart(index) {
-    if(confirm("Remove this item from the cart?")) {
-      cart.splice(index, 1);
-      saveCart();
-      renderPage('cart');
-    }
+  return `
+  <html><head><title>Chips - LolliGalaxy Emporium</title>
+    <style>
+      body {font-family: Arial,sans-serif; background:#fce4ec; color:#880e4f; padding:20px;}
+      ul {columns: 2; list-style:none; padding-left:0;}
+      li.prod {cursor:pointer; margin-bottom:6px; text-decoration:underline;}
+      li.prod:hover {color:#560027;}
+    </style>
+  </head><body>
+    ${getNavBar()}
+    <h1>Chips</h1>
+
+    <h3>Normal Flavours (10)</h3>
+    <ul>${normalFlavours.map(f => listItem(f, "Chips")).join('')}</ul>
+
+    <h3>Exotic Flavours (19)</h3>
+    <ul>${exoticFlavours.map(f => listItem(f, "Chips")).join('')}</ul>
+
+    <h3>Luxury Flavour (1)</h3>
+    <ul>${goldFlavour.map(f => listItem(f, "Chips")).join('')}</ul>
+
+    <p><em>Click a product name to add to cart.</em></p>
+
+    <script>
+      document.querySelectorAll('li.prod').forEach(li => {
+        li.addEventListener('click', () => {
+          const name = li.getAttribute('data-name');
+          const cat = li.getAttribute('data-cat');
+          const price = parseFloat(li.getAttribute('data-price'));
+          addToCart(name, 1, cat, price);
+          alert(name + ' added to cart!');
+        });
+      });
+      function addToCart(name, qty, category, price=3) {
+        let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        let found = cart.find(i => i.name === name);
+        if(found) found.qty += qty;
+        else cart.push({name, qty, category, price});
+        localStorage.setItem('cart', JSON.stringify(cart));
+      }
+    </script>
+  </body></html>
+  `;
+}
+
+// 5. Drinks page
+function getDrinksPage() {
+  const exoticJuices = [
+    "Acai Berry", "Guava Nectar", "Lychee Punch", "Dragonfruit Delight", "Passionfruit Twist",
+    "Kumquat Cooler", "Tamarind Tango", "Pomegranate Splash", "Rambutan Rush", "Yuzu Burst",
+    "Mangosteen Magic", "Starfruit Zing", "Blood Orange Bliss", "Jackfruit Juice", "Durian Dream",
+    "Soursop Sip", "Prickly Pear Punch", "Cupuacu Crush", "Baobab Blast", "Salak Sparkle"
+  ];
+  const exoticSodas = [
+    "Elderflower Fizz", "Hibiscus Pop", "Lavender Sparkle", "Rose Petal Soda", "Ginger Bloom",
+    "Matcha Soda", "Chili Citrus Fizz", "Basil Lime Soda", "Mint Melon Pop", "Turmeric Twist",
+    "Lemongrass Soda", "Cucumber Cooler", "Cardamom Cola", "Szechuan Soda", "Pineapple Chili Pop",
+    "Blueberry Basil Fizz", "Cranberry Sage Soda", "Coconut Lime Pop", "Peppermint Fizz", "Tamarind Tonic"
+  ];
+  
+  // Prices above $5, so we display $6 for each as placeholder
+  function listItem(name, category, price=6) {
+    return `<li class="prod" data-name="${name}" data-cat="${category}" data-price="${price}">${name} - $${price.toFixed(2)}</li>`;
   }
 
-  // Clear whole cart
-  function clearCart() {
-    if(confirm("Clear entire cart?")) {
-      cart = [];
-      saveCart();
-      renderPage('cart');
-    }
-  }
+  return `
+  <html><head><title>Drinks - LolliGalaxy Emporium</title>
+    <style>
+      body {font-family: Arial,sans-serif; background:#fce4ec; color:#880e4f; padding:20px;}
+      ul {columns: 2; list-style:none; padding-left:0;}
+      li.prod {cursor:pointer; margin-bottom:6px; text-decoration:underline;}
+      li.prod:hover {color:#560027;}
+    </style>
+  </head><body>
+    ${getNavBar()}
+    <h1>Drinks</h1>
+    <h3>Exotic Juices (20)</h3>
+    <ul>${exoticJuices.map(j => listItem(j, "Drinks")).join('')}</ul>
 
-  // Render products listing (lollies, chocolates, drinks, chips)
-  function renderProducts(category) {
-    const items = data[category];
-    let html = `<h2>${category.charAt(0).toUpperCase() + category.slice(1)}</h2>`;
-    items.forEach(p => {
-      html += `<div class="product">
-        <h4>${p.name}</h4>
-        <p>Category: ${p.category}</p>
-        <p>Price: $${p.price.toFixed(2)}</p>
-        <button onclick="addToCart('${p.name}', ${p.price})">Add to Cart</button>
-      </div>`;
-    });
-    return html;
-  }
+    <h3>Exotic Sodas (20)</h3>
+    <ul>${exoticSodas.map(s => listItem(s, "Drinks")).join('')}</ul>
 
-  // Render cart page
-  function renderCart() {
-    if(cart.length === 0) return "<h2>Your cart is empty.</h2>";
-    let html = `<h2>Your Cart</h2>
-    <table>
-      <tr><th>Item</th><th>Price</th><th>Qty</th><th>Total</th><th>Remove</th></tr>`;
-    let grandTotal = 0;
-    cart.forEach((item, i) => {
-      const total = item.price * item.qty;
-      grandTotal += total;
-      html += `<tr>
-        <td>${item.name}</td>
-        <td>$${item.price.toFixed(2)}</td>
-        <td>${item.qty}</td>
-        <td>$${total.toFixed(2)}</td>
-        <td><button onclick="removeFromCart(${i})">Remove</button></td>
-      </tr>`;
-    });
-    html += `<tr><th colspan="3">Grand Total</th><th>$${grandTotal.toFixed(2)}</th><th></th></tr></table>`;
-    html += `<button onclick="clearCart()">Clear Cart</button>`;
-    return html;
-  }
+    <p><em>Click a product name to add to cart.</em></p>
 
-  // Render checkout page
-  function renderCheckout() {
-    if(cart.length === 0) return "<h2>Your cart is empty. Add items before checking out.</h2>";
+    <script>
+      document.querySelectorAll('li.prod').forEach(li => {
+        li.addEventListener('click', () => {
+          const name = li.getAttribute('data-name');
+          const cat = li.getAttribute('data-cat');
+          const price = parseFloat(li.getAttribute('data-price'));
+          addToCart(name, 1, cat, price);
+          alert(name + ' added to cart!');
+        });
+      });
+      function addToCart(name, qty, category, price=6) {
+        let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        let found = cart.find(i => i.name === name);
+        if(found) found.qty += qty;
+        else cart.push({name, qty, category, price});
+        localStorage.setItem('cart', JSON.stringify(cart));
+      }
+    </script>
+  </body></html>
+  `;
+}
 
-    let grandTotal = cart.reduce((acc, i) => acc + i.price * i.qty, 0);
-    return `
-      <h2>Checkout</h2>
-      <form id="checkoutForm" onsubmit="return handleCheckout(event)">
-        <label>Name:</label>
-        <input type="text" id="name" required />
-        <label>Address:</label>
-        <input type="text" id="address" required />
-        <label>Email:</label>
-        <input type="email" id="email" required />
-        <label>Card Number:</label>
-        <input type="text" id="card" pattern="\\d{16}" maxlength="16" placeholder="1234123412341234" required />
-        <label>Expiry Date (MM/YY):</label>
-        <input type="text" id="expiry" pattern="(0[1-9]|1[0-2])\\/\\d{2}" placeholder="MM/YY" required />
-        <label>CVV:</label>
-        <input type="text" id="cvv" pattern="\\d{3}" maxlength="3" placeholder="123" required />
-        <p><strong>Total to pay: $${grandTotal.toFixed(2)}</strong></p>
-        <button type="submit">Submit Order</button>
-      </form>
-      <div id="checkoutMessage"></div>
-    `;
-  }
+// 6. Cart page
+function getCartPage() {
+  return `
+  <html><head><title>Cart - LolliGalaxy Emporium</title>
+    <style>
+      body {font-family: Arial,sans-serif; background:#f9f0ff; color:#6a1b9a; padding:20px;}
+      table {width: 100%; border-collapse: collapse; margin-bottom: 20px;}
+      th, td {border: 1px solid #6a1b9a; padding: 8px; text-align: left;}
+      th {background: #d1c4e9;}
+      button {background: #8e24aa; color: white; border: none; padding: 6px 12px; cursor:pointer; border-radius: 4px;}
+      button:hover {background: #6a1b9a;}
+      input[type=number] {width: 50px;}
+      #emptyMsg {font-style: italic; color: #aaa;}
+    </style>
+  </head><body>
+    ${getNavBar()}
+    <h1>Your Cart</h1>
+    <div id="cartContainer"></div>
+    <p><a href="?page=checkout">Proceed to Checkout</a></p>
 
-  // Handle checkout submit
-  function handleCheckout(e) {
-    e.preventDefault();
+    <script>
+      function renderCart() {
+        let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const container = document.getElementById('cartContainer');
+        if(cart.length === 0) {
+          container.innerHTML = '<p id="emptyMsg">Your cart is empty.</p>';
+          return;
+        }
+        let html = '<table><tr><th>Product</th><th>Category</th><th>Price</th><th>Quantity</th><th>Total</th><th>Remove</th></tr>';
+        let grandTotal = 0;
+        cart.forEach((item, idx) => {
+          let total = item.price * item.qty;
+          grandTotal += total;
+          html += \`<tr>
+            <td>\${item.name}</td>
+            <td>\${item.category}</td>
+            <td>$\${item.price.toFixed(2)}</td>
+            <td><input type="number" min="1" value="\${item.qty}" data-idx="\${idx}" class="qtyInput"></td>
+            <td>$\${total.toFixed(2)}</td>
+            <td><button data-idx="\${idx}" class="removeBtn">X</button></td>
+          </tr>\`;
+        });
+        html += \`<tr><th colspan="4" style="text-align:right">Grand Total:</th><th colspan="2">$ \${grandTotal.toFixed(2)}</th></tr></table>\`;
+        container.innerHTML = html;
 
-    const name = document.getElementById('name').value.trim();
-    const address = document.getElementById('address').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const card = document.getElementById('card').value.trim();
-    const expiry = document.getElementById('expiry').value.trim();
-    const cvv = document.getElementById('cvv').value.trim();
+        document.querySelectorAll('.qtyInput').forEach(input => {
+          input.addEventListener('change', e => {
+            const idx = e.target.getAttribute('data-idx');
+            let val = parseInt(e.target.value);
+            if(isNaN(val) || val < 1) val = 1;
+            let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            cart[idx].qty = val;
+            localStorage.setItem('cart', JSON.stringify(cart));
+            renderCart();
+          });
+        });
 
-    // Simple validation (more can be added)
-    if(!name || !address || !email || !card || !expiry || !cvv) {
-      alert("Please fill out all fields correctly.");
-      return false;
-    }
+        document.querySelectorAll('.removeBtn').forEach(btn => {
+          btn.addEventListener('click', e => {
+            const idx = e.target.getAttribute('data-idx');
+            let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            cart.splice(idx, 1);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            renderCart();
+          });
+        });
+      }
+      renderCart();
+    </script>
+  </body></html>
+  `;
+}
 
-    // Simulate order submission
-    document.getElementById('checkoutMessage').innerHTML = "<p>Processing your order...</p>";
-    setTimeout(() => {
-      document.getElementById('checkoutMessage').innerHTML = "<p style='color:green;'>Thank you, your order has been placed!</p>";
-      cart = [];
-      saveCart();
-    }, 1500);
+// 7. Checkout (card info, address, phone, email)
+function getCheckoutPage() {
+  return `
+  <html><head><title>Checkout - LolliGalaxy Emporium</title>
+    <style>
+      body {font-family: Arial,sans-serif; background:#ede7f6; color:#512da8; padding:20px;}
+      form {max-width: 400px; margin:auto; background: #f3e5f5; padding: 20px; border-radius: 10px;}
+      label {display:block; margin-top: 15px; font-weight: bold;}
+      input, textarea {width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;}
+      button {margin-top: 20px; padding: 10px 15px; background: #6a1b9a; color: white; border: none; cursor: pointer; border-radius: 6px;}
+      button:hover {background: #4a0072;}
+    </style>
+  </head><body>
+    ${getNavBar()}
+    <h1>Checkout</h1>
+    <form id="checkoutForm">
+      <label for="cardNumber">Card Number</label>
+      <input type="text" id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" required pattern="\\d{4} \\d{4} \\d{4} \\d{4}">
 
-    return false;
-  }
+      <label for="expiryDate">Expiry Date</label>
+      <input type="month" id="expiryDate" name="expiryDate" required>
 
-  // Render contact page
-  function renderContact() {
-    return `
-      <h2>Contact Us</h2>
-      <p>Email: support@exotictreatsstore.com</p>
-      <p>Phone: +1 (555) 123-4567</p>
-      <p>Address: 123 Candy Lane, Sweet City, USA</p>
-    `;
-  }
+      <label for="cvv">CVV</label>
+      <input type="password" id="cvv" name="cvv" maxlength="3" required pattern="\\d{3}">
 
-  // Main render function
-  function renderPage(p) {
-    const content = document.getElementById('content');
-    switch(p) {
-      case 'lollies':
-      case 'chocolates':
-      case 'drinks':
-      case 'chips':
-        content.innerHTML = renderProducts(p);
-        break;
-      case 'cart':
-        content.innerHTML = renderCart();
-        break;
-      case 'checkout':
-        content.innerHTML = renderCheckout();
-        break;
-      case 'contact':
-        content.innerHTML = renderContact();
-        break;
-      default:
-        content.innerHTML = "<h2>Page not found.</h2>";
-    }
+      <label for="address">Shipping Address</label>
+      <textarea id="address" name="address" rows="3" placeholder="Street, City, State, Zip" required></textarea>
 
-    // Highlight navbar link
-    document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
-    const activeLink = document.querySelector(`nav a[data-page="${p}"]`);
-    if(activeLink) activeLink.classList.add('active');
-  }
+      <label for="phone">Phone Number</label>
+      <input type="tel" id="phone" name="phone" placeholder="+1-555-555-5555" required pattern="\\+?\\d{1,3}?[-.\\s]?\\(?\\d{3}\\)?[-.\\s]?\\d{3}[-.\\s]?\\d{4}">
 
-  // Initialize
-  updateCartCount();
-  renderPage(page);
-</script>
+      <label for="email">Email Address</label>
+      <input type="email" id="email" name="email" placeholder="you@example.com" required>
 
-</body>
-</html>
+      <button type="submit">Submit Payment</button>
+    </form>
+
+    <script>
+      document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        alert('Payment info submitted! Thank you for shopping at LolliGalaxy Emporium.');
+        localStorage.removeItem('cart');
+        window.location.href = '?page=home';
+      });
+    </script>
+  </body></html>
+  `;
+}
+
+// 8. Support page (your information if something goes wrong)
+function getSupportPage() {
+  return `
+  <html><head><title>Support - LolliGalaxy Emporium</title>
+    <style>
+      body {font-family: Arial,sans-serif; background:#f9f0ff; color:#6a1b9a; padding:30px;}
+      h1 {color:#8e24aa;}
+      p {max-width: 600px;}
+      a {color: #8e24aa;}
+    </style>
+  </head><body>
+    ${getNavBar()}
+    <h1>Customer Support</h1>
+    <p>If you encounter any issues with your order, please contact us immediately. We are here to help!</p>
+    <ul>
+      <li>Email: <a href="mailto:support@lolligalaxy.com">support@lolligalaxy.com</a></li>
+      <li>Phone: +1-800-LOLLY-99 (+1-800-56559-99)</li>
+      <li>Address: 123 Candy Lane, Sweet City, Sugarland</li>
+    </ul>
+    <p>Our support team is available Monday to Friday from 9am to 6pm.</p>
+  </body></html>
+  `;
+}
