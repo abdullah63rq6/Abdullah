@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {font-family: Arial, sans-serif; margin:0; background:#f9f9f9;}
+    header, nav {background:#333; padding:10px;}
+    nav a {
+      color:#eee;
+      margin-right: 15px;
+      text-decoration:none;
+      font-weight:bold;
+    }
+    nav a.active, nav a:hover {
+      text-decoration: underline;
+      color: #ffd700;
+    }
+    main {padding: 20px;}
+    .product {
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 0 5px #ccc;
+      padding: 15px;
+      margin: 10px;
+      display: inline-block;
+      vertical-align: top;
+      width: 220px;
+    }
+    .product h4 {margin: 0 0 5px;}
+    .product p {margin: 4px 0;}
+    button {
+      background:#28a745;
+      border:none;
+      color:#fff;
+      padding:8px 15px;
+      border-radius:5px;
+      cursor:pointer;
+    }
+    button:hover {
+      background:#1e7e34;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background:#fff;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+    }
+    input[type=text], input[type=number], input[type=email] {
+      width: 100%;
+      padding: 8px;
+      margin: 6px 0 12px 0;
+      box-sizing: border-box;
+    }
+    .error {color: red;}
+  </style>
+</head>
+<body>
+
+<?!= include('navbar'); ?>
+
+<main id="content">
+  Loading...
+</main>
+
+<script>
+  const page = '<?= page ?>';
+  const data = <?= JSON.stringify(data) ?>;
+  let cart = JSON.parse(localStorage.getItem('cart') || "[]");
+
+  // Update cart count in navbar
+  function updateCartCount() {
+    const count = cart.reduce((acc, item) => acc + item.qty, 0);
+    document.getElementById('cartCount').textContent = count;
+  }
+
+  // Save cart to localStorage
+  function saveCart() {
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartCount();
+  }
+
+  // Add item to cart
+  function addToCart(name, price) {
+    const existing = cart.find(i => i.name === name);
+    if (existing) {
+      existing.qty++;
+    } else {
+      cart.push({name, price, qty: 1});
+    }
+    saveCart();
+    alert(name + " added to cart.");
+  }
+
+  // Remove from cart by index
+  function removeFromCart(index) {
+    if(confirm("Remove this item from the cart?")) {
+      cart.splice(index, 1);
+      saveCart();
+      renderPage('cart');
+    }
+  }
+
+  // Clear whole cart
+  function clearCart() {
+    if(confirm("Clear entire cart?")) {
+      cart = [];
+      saveCart();
+      renderPage('cart');
+    }
+  }
+
+  // Render products listing (lollies, chocolates, drinks, chips)
+  function renderProducts(category) {
+    const items = data[category];
+    let html = `<h2>${category.charAt(0).toUpperCase() + category.slice(1)}</h2>`;
+    items.forEach(p => {
+      html += `<div class="product">
+        <h4>${p.name}</h4>
+        <p>Category: ${p.category}</p>
+        <p>Price: $${p.price.toFixed(2)}</p>
+        <button onclick="addToCart('${p.name}', ${p.price})">Add to Cart</button>
+      </div>`;
+    });
+    return html;
+  }
+
+  // Render cart page
+  function renderCart() {
+    if(cart.length === 0) return "<h2>Your cart is empty.</h2>";
+    let html = `<h2>Your Cart</h2>
+    <table>
+      <tr><th>Item</th><th>Price</th><th>Qty</th><th>Total</th><th>Remove</th></tr>`;
+    let grandTotal = 0;
+    cart.forEach((item, i) => {
+      const total = item.price * item.qty;
+      grandTotal += total;
+      html += `<tr>
+        <td>${item.name}</td>
+        <td>$${item.price.toFixed(2)}</td>
+        <td>${item.qty}</td>
+        <td>$${total.toFixed(2)}</td>
+        <td><button onclick="removeFromCart(${i})">Remove</button></td>
+      </tr>`;
+    });
+    html += `<tr><th colspan="3">Grand Total</th><th>$${grandTotal.toFixed(2)}</th><th></th></tr></table>`;
+    html += `<button onclick="clearCart()">Clear Cart</button>`;
+    return html;
+  }
+
+  // Render checkout page
+  function renderCheckout() {
+    if(cart.length === 0) return "<h2>Your cart is empty. Add items before checking out.</h2>";
+
+    let grandTotal = cart.reduce((acc, i) => acc + i.price * i.qty, 0);
+    return `
+      <h2>Checkout</h2>
+      <form id="checkoutForm" onsubmit="return handleCheckout(event)">
+        <label>Name:</label>
+        <input type="text" id="name" required />
+        <label>Address:</label>
+        <input type="text" id="address" required />
+        <label>Email:</label>
+        <input type="email" id="email" required />
+        <label>Card Number:</label>
+        <input type="text" id="card" pattern="\\d{16}" maxlength="16" placeholder="1234123412341234" required />
+        <label>Expiry Date (MM/YY):</label>
+        <input type="text" id="expiry" pattern="(0[1-9]|1[0-2])\\/\\d{2}" placeholder="MM/YY" required />
+        <label>CVV:</label>
+        <input type="text" id="cvv" pattern="\\d{3}" maxlength="3" placeholder="123" required />
+        <p><strong>Total to pay: $${grandTotal.toFixed(2)}</strong></p>
+        <button type="submit">Submit Order</button>
+      </form>
+      <div id="checkoutMessage"></div>
+    `;
+  }
+
+  // Handle checkout submit
+  function handleCheckout(e) {
+    e.preventDefault();
+
+    const name = document.getElementById('name').value.trim();
+    const address = document.getElementById('address').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const card = document.getElementById('card').value.trim();
+    const expiry = document.getElementById('expiry').value.trim();
+    const cvv = document.getElementById('cvv').value.trim();
+
+    // Simple validation (more can be added)
+    if(!name || !address || !email || !card || !expiry || !cvv) {
+      alert("Please fill out all fields correctly.");
+      return false;
+    }
+
+    // Simulate order submission
+    document.getElementById('checkoutMessage').innerHTML = "<p>Processing your order...</p>";
+    setTimeout(() => {
+      document.getElementById('checkoutMessage').innerHTML = "<p style='color:green;'>Thank you, your order has been placed!</p>";
+      cart = [];
+      saveCart();
+    }, 1500);
+
+    return false;
+  }
+
+  // Render contact page
+  function renderContact() {
+    return `
+      <h2>Contact Us</h2>
+      <p>Email: support@exotictreatsstore.com</p>
+      <p>Phone: +1 (555) 123-4567</p>
+      <p>Address: 123 Candy Lane, Sweet City, USA</p>
+    `;
+  }
+
+  // Main render function
+  function renderPage(p) {
+    const content = document.getElementById('content');
+    switch(p) {
+      case 'lollies':
+      case 'chocolates':
+      case 'drinks':
+      case 'chips':
+        content.innerHTML = renderProducts(p);
+        break;
+      case 'cart':
+        content.innerHTML = renderCart();
+        break;
+      case 'checkout':
+        content.innerHTML = renderCheckout();
+        break;
+      case 'contact':
+        content.innerHTML = renderContact();
+        break;
+      default:
+        content.innerHTML = "<h2>Page not found.</h2>";
+    }
+
+    // Highlight navbar link
+    document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+    const activeLink = document.querySelector(`nav a[data-page="${p}"]`);
+    if(activeLink) activeLink.classList.add('active');
+  }
+
+  // Initialize
+  updateCartCount();
+  renderPage(page);
+</script>
+
+</body>
+</html>
